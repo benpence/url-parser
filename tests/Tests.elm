@@ -23,6 +23,7 @@ testParsing =
     , parserTest "Token" "token/abc" (TokenRoute "abc")
     , parserTest "Users" "users" (UsersRoutes UsersRoute)
     , parserTest "User" "users/2" (UsersRoutes (UserRoute 2))
+    , parserTest "User" "users/search" (UsersRoutes (UserRoute 2))
     , parserTest "Edit" "users/2/edit" (UsersRoutes (UserEditRoute 2))
     ]
 
@@ -83,12 +84,15 @@ usersMatchers =
     , map UsersRoute top
     ]
 
+usersSearchMatcher =
+    s "users" </> s "search" <?> (requiredIntParam "user_id")
 
 mainMatchers =
     [ map HomeRoute top
     , map AboutRoute (s "about")
     , map TokenRoute (s "token" </> string)
     , map UsersRoutes (s "users" </> (oneOf usersMatchers))
+    , map (UsersRoutes << UserRoute) usersSearchMatcher
     ]
 
 
@@ -107,6 +111,6 @@ newLocation =
     , pathname = ""
     , port_ = ""
     , protocol = "http"
-    , search = ""
+    , search = "?q=55&user_id=2"
     , username = ""
     }

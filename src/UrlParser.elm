@@ -2,6 +2,7 @@ module UrlParser exposing
   ( Parser, string, int, s
   , (</>), map, oneOf, top, custom
   , QueryParser, (<?>), stringParam, intParam, customParam
+  , requiredStringParam, requiredIntParam, customRequiredParam
   , parsePath, parseHash
   )
 
@@ -332,6 +333,38 @@ customParam key func =
   QueryParser <| \{ visited, unvisited, params, value } ->
     [ State visited unvisited params (value (func (Dict.get key params))) ]
 
+{-| Parse a required query parameter as a `String`.
+
+    parsePath (s "blog" <?> requiredStringParam "search") location
+    -- /blog/              ==>  Nothing
+    -- /blog/?search=cats  ==>  Just (Overview "cats")
+-}
+requiredStringParam : String -> QueryParser (String -> a) a
+requiredStringParam name =
+  customRequiredParam name Ok
+
+{-| Parse a required query parameter as an `Int`. Maybe you want to show paginated
+search results. You could have a `start` query parameter to say which result
+should appear first.
+
+    parsePath (s "results" <?> requiredIntParam "start") location
+    -- /results           ==>  Nothing
+    -- /results?start=10  ==>  Just 10
+-}
+requiredIntParam : String -> QueryParser (Int -> a) a
+requiredIntParam name =
+  customRequiredParam name String.toInt
+
+{-| Create a custom query parser with a required key.-}
+customRequiredParam : String -> (String -> Result String a) -> QueryParser (a -> b) b
+customRequiredParam key parse =
+  QueryParser <| \{ visited, unvisited, params, value } ->
+    case Maybe.andThen (Result.toMaybe << parse) (Dict.get key params) of
+      Just nextValue ->
+        [ State visited unvisited params (value nextValue) ]
+
+      _ ->
+        []
 
 
 -- RUN A PARSER
