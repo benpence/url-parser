@@ -15,7 +15,7 @@ module UrlParser exposing
 @docs (</>), map, oneOf, top, custom
 
 # Query Parameter Parsers
-@docs QueryParser, (<?>), stringParam, intParam, customParam
+@docs QueryParser, (<?>), stringParam, intParam, customParam, requiredStringParam, requiredIntParam, customRequiredParam
 
 # Run a Parser
 @docs parsePath, parseHash
